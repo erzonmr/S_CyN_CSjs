@@ -1,3 +1,5 @@
+Modo Oscuro Mejorado
+
 <b:if cond='data:view.isPost'>
 
   <!-- Font Awesome 7 -->
@@ -6,8 +8,7 @@
   <!-- ChordSheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/chordsheetjs@12.3.1/lib/bundle.min.js"></script>
 
-  <!-- html2canvas (opcional, solo si lo usarás después) + jsPDF UMD -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- JSPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
