@@ -6,8 +6,7 @@
   <!-- ChordSheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/chordsheetjs@12.3.1/lib/bundle.min.js"></script>
 
-  <!-- html2canvas (opcional, solo si lo usarás después) + jsPDF UMD -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF UMD -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -31,12 +30,42 @@
     .csjs-song-meta h2 { font-size: 1.2rem; margin: 0.25rem 0 0; font-weight: 700; color: var(--cs-primary-red); }
     .csjs-song-meta p { font-size: 1rem; margin: 0.5rem 0 0; font-weight: 400; color: var(--cs-text-secondary); }
     .csjs-toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--cs-light-gray-border); }
-    .csjs-transpose-controls { order: 1; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; background: var(--cs-light-gray-bg); border-radius: 999px; padding: 8px; }
+    .csjs-transpose-controls {
+      order: 1;
+      flex: 1 1 100%;
+      width: 100%;
+      min-width: 220px;
+      max-width: 520px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      background: var(--cs-light-gray-bg);
+      border-radius: 999px;
+      padding: 8px;
+      white-space: nowrap;
+      margin: 0;
+    }
     .csjs-transpose-label { display: none; }
     .csjs-transpose-val { font-weight: 700; min-width: 1.5rem; text-align: center; }
     .csjs-transpose-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--cs-text-secondary); }
-    .csjs-toolbar .csjs-btn-text { display: none; }
-    .csjs-btn { order: 2; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: var(--cs-light-gray-bg); border: none; font-size: 1.2rem; color: var(--cs-text-primary); cursor: pointer; }
+    .csjs-toolbar .csjs-btn-text { display: none; white-space: nowrap; }
+    .csjs-btn {
+      order: 2;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: var(--cs-light-gray-bg);
+      border: none;
+      font-size: 1.2rem;
+      color: var(--cs-text-primary);
+      cursor: pointer;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
     .csjs-btn[data-action="share"] { background: var(--cs-primary-red); color: var(--cs-white); }
     .csjs-btn[data-action="reset"] .csjs-btn-text { display: none; }
     .csjs-btn[data-action="reset"] i { display: inline-block; }
@@ -56,33 +85,24 @@
     /* --- AJUSTES PARA TABLET GRANDE (A partir de 768px) --- */
     @media (min-width: 768px) {
       .csjs-widget { padding: 24px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, .08); border: 1px solid var(--cs-light-gray-border); }
-      .csjs-toolbar { flex-wrap: nowrap; }
-      .csjs-transpose-controls { width: auto; }
-      /* El botón Reset ahora muestra texto */
-      .csjs-btn[data-action="reset"] { width: auto; height: auto; padding: 8px 14px; font-size: .95rem; }
-      .csjs-btn[data-action="reset"] .csjs-btn-text { display: inline-block; }
-      .csjs-btn[data-action="reset"] i { display: none; }
-
-      /* Agrupación de botones de acción a la derecha */
-      .csjs-btn[data-action="like"] { margin-left: auto; }
-
-      /* Los otros 3 botones siguen siendo íconos */
-      .csjs-btn[data-action="like"],
-      .csjs-btn[data-action="pdf"],
-      .csjs-btn[data-action="share"] {
-        order: 3;
+      .csjs-toolbar { flex-wrap: nowrap; align-items: center; justify-content: flex-start; gap: 12px; }
+      .csjs-transpose-controls {
+        order: 1;
+        flex: 1 1 clamp(220px, 40%, 520px);
+        width: auto;
+        margin: 0;
       }
-    }
-
-    /* --- AJUSTES PARA ESCRITORIO (A partir de 992px) --- */
-    @media (min-width: 992px) {
-      .csjs-transpose-label { display: inline-block; }
-      .csjs-toolbar .csjs-btn-text { display: inline-block; }
-      .csjs-btn { width: auto; height: auto; padding: 8px 16px; border-radius: 12px; font-size: .95rem; gap: 8px; }
-      .csjs-btn[data-action="reset"],
-      .csjs-btn[data-action="share"] { background: var(--cs-primary-red); color: var(--cs-white); }
-      .csjs-btn[data-action="like"],
-      .csjs-btn[data-action="pdf"] { background: transparent; border: 1px solid var(--cs-light-gray-border); color: var(--cs-text-secondary); }
+      .csjs-btn[data-action="reset"] {
+        width: auto;
+        height: auto;
+        padding: 8px 16px;
+        font-size: .95rem;
+        gap: 8px;
+      }
+      .csjs-btn[data-action="reset"] .csjs-btn-text {
+        display: inline-block;
+      }
+      .csjs-btn[data-action="reset"] i { display: none; }
     }
 
     /* --- Estilos del cuerpo de la canción --- */
@@ -180,7 +200,7 @@
       background: #444; border-radius: 4px;
     }
     /* Breakpoints mantienen estilos; solo ajustamos colores en desktop */
-    @media (min-width: 992px){
+    @media (min-width: 1106px){
       html.is-dark .csjs-btn[data-action="like"],
       html.is-dark .csjs-btn[data-action="pdf"]{
         background: transparent;
@@ -191,6 +211,88 @@
       html.is-dark .csjs-btn[data-action="reset"]{
         background: #fd3a13; color: #fff;
       }
+    }
+
+    /* ==== TOOLBAR: proporciones y no romper textos ==== */
+
+    /* Base: evita que los textos de botones se partan */
+    .csjs-btn,
+    .csjs-btn .csjs-btn-text,
+    .csjs-transpose-controls { white-space: nowrap; }
+
+    /* La píldora de transposición ya no crece infinito:
+       - mínimo 220px
+       - preferido ~40% del ancho disponible
+       - máximo 520px */
+    .csjs-transpose-controls{
+      min-width: 220px;
+      max-width: 520px;
+    }
+
+    /* Los otros botones nunca se estiran ni se parten */
+    .csjs-btn{ flex: 0 0 auto; }
+
+    /* ======= BREAKPOINTS ======= */
+
+    /* 480–767px (móvil grande): pill + botones pueden ir en 2 filas */
+    @media (min-width:480px) and (max-width:767.98px){
+      .csjs-toolbar{ flex-wrap: wrap; justify-content:center; }
+      .csjs-transpose-controls{ order: 1; width: 100%; }
+      .csjs-btn{ order: 2; }
+    }
+
+    /* 768–990px:
+       - Todo en UNA sola fila si cabe (nowrap)
+       - Mostrar "Reset" con texto (ya lo haces), en NEGRITA y #fd3a13
+       - Ocultar textos de Like/PDF/Share para que NO partan palabras */
+    @media (min-width:768px) and (max-width:990.98px){
+      .csjs-toolbar{ flex-wrap: nowrap; justify-content:flex-start; align-items:center; gap: 12px; }
+      .csjs-transpose-controls{ flex: 1 1 clamp(220px,40%,520px); width:auto; margin:0; }
+      .csjs-btn[data-action="reset"] .csjs-btn-text{
+        font-weight: 700; color: #fd3a13;
+      }
+      /* Mantén íconos sin texto para evitar cortes en este rango */
+      .csjs-btn[data-action="like"] .csjs-btn-text,
+      .csjs-btn[data-action="pdf"]  .csjs-btn-text,
+      .csjs-btn[data-action="share"] .csjs-btn-text{ display: none; }
+    }
+
+    /* 991–1105px:
+       - Aún en una fila
+       - Siguen ocultos los textos de Like/PDF/Share para evitar el “par-ti-do”
+       - Reset mantiene negrita + #fd3a13
+    */
+    @media (min-width:991px) and (max-width:1105.98px){
+      .csjs-toolbar{ flex-wrap: nowrap; justify-content:flex-start; align-items:center; gap: 14px; }
+      .csjs-transpose-controls{ flex: 1 1 clamp(240px,42%,520px); width:auto; margin:0; }
+      .csjs-btn[data-action="reset"] .csjs-btn-text{
+        font-weight:700; color:#fd3a13;
+      }
+      .csjs-btn[data-action="like"] .csjs-btn-text,
+      .csjs-btn[data-action="pdf"]  .csjs-btn-text,
+      .csjs-btn[data-action="share"] .csjs-btn-text{ display: none; }
+    }
+
+    /* ≥1106px (desktop ancho):
+       - Ya mostramos texto en TODOS los botones
+       - Una fila, proporciones balanceadas
+    */
+    @media (min-width:1106px){
+      .csjs-toolbar{ flex-wrap: nowrap; justify-content:flex-start; align-items:center; gap: 16px; }
+      .csjs-transpose-controls{ flex: 1 1 clamp(260px,45%,520px); width:auto; margin:0; }
+      .csjs-toolbar .csjs-btn-text{ display: inline-block; }
+      .csjs-btn{ width: auto; height: auto; padding: 8px 16px; border-radius: 12px; font-size: .95rem; gap: 8px; }
+      .csjs-transpose-label{ display: inline-block; }
+      .csjs-btn[data-action="reset"],
+      .csjs-btn[data-action="share"]{ background: var(--cs-primary-red); color: var(--cs-white); }
+      .csjs-btn[data-action="like"],
+      .csjs-btn[data-action="pdf"]{ background: transparent; border: 1px solid var(--cs-light-gray-border); color: var(--cs-text-secondary); }
+      .csjs-btn[data-action="reset"] .csjs-btn-text{ font-weight: 700; color: inherit; }
+    }
+
+    /* Opcional: en pantallas muy angostas (<360) dale respiro */
+    @media (max-width:359.98px){
+      .csjs-transpose-controls{ min-width: 200px; }
     }
   </style>
 
