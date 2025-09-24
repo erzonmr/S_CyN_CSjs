@@ -1,0 +1,14 @@
+# Archivos de configuración y temporales
+*.tmp
+*.log
+
+# Archivos específicos de Blogger
+settings.xml (si tienes un archivo de configuración específico)
+
+# Directorios de dependencias o bibliotecas
+node_modules/
+vendor/
+
+# Otros archivos innecesarios
+.DS_Store
+Thumbs.db
