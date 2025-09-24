@@ -1,0 +1,669 @@
+<b:if cond='data:view.isPost'>
+
+  <!-- Font Awesome 7 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+  <!-- ChordSheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chordsheetjs@12.3.1/lib/bundle.min.js"></script>
+
+  <!-- html2canvas (opcional, solo si lo usarás después) + jsPDF UMD -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* --- INICIO: Nuevo Estilo Estético v9 (Ajustes finales) --- */
+    :root {
+      --cs-primary-red: #F44336;
+      --cs-light-gray-bg: #f5f5f5;
+      --cs-light-gray-border: #e0e0e0;
+      --cs-text-primary: #111;
+      --cs-text-secondary: #666;
+      --cs-white: #fff;
+      --cs-accent: #fd3a13;
+    }
+
+    /* --- ESTILOS BASE (Móvil < 480px) --- */
+    .csjs-widget { background: var(--cs-white); padding: 16px; font-family: inherit; margin: 0; border-bottom: 1px solid var(--cs-light-gray-border); }
+    .csjs-header { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .csjs-artist-img { width: 80px; height: 80px; border-radius: 20px; object-fit: cover; }
+    .csjs-song-meta { text-align: center; }
+    .csjs-song-meta h1 { font-size: 1.6rem; line-height: 1.2; margin: 0; font-weight: 700; color: var(--cs-text-primary); }
+    .csjs-song-meta h2 { font-size: 1.2rem; margin: 0.25rem 0 0; font-weight: 700; color: var(--cs-primary-red); }
+    .csjs-song-meta p { font-size: 1rem; margin: 0.5rem 0 0; font-weight: 400; color: var(--cs-text-secondary); }
+    .csjs-toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--cs-light-gray-border); }
+    .csjs-transpose-controls { order: 1; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; background: var(--cs-light-gray-bg); border-radius: 999px; padding: 8px; }
+    .csjs-transpose-label { display: none; }
+    .csjs-transpose-val { font-weight: 700; min-width: 1.5rem; text-align: center; }
+    .csjs-transpose-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--cs-text-secondary); }
+    .csjs-toolbar .csjs-btn-text { display: none; }
+    .csjs-btn { order: 2; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: var(--cs-light-gray-bg); border: none; font-size: 1.2rem; color: var(--cs-text-primary); cursor: pointer; }
+    .csjs-btn[data-action="share"] { background: var(--cs-primary-red); color: var(--cs-white); }
+    .csjs-btn[data-action="reset"] .csjs-btn-text { display: none; }
+    .csjs-btn[data-action="reset"] i { display: inline-block; }
+    .csjs-btn.liked i { color: var(--cs-primary-red); }
+
+    /* Foco accesible */
+    .csjs-btn:focus-visible, .csjs-transpose-btn:focus-visible{
+      outline:2px solid var(--cs-primary-red); outline-offset:2px;
+    }
+
+    /* --- AJUSTES PARA TABLET (A partir de 480px) --- */
+    @media (min-width: 480px) {
+      .csjs-header { flex-direction: row; text-align: left; }
+      .csjs-song-meta { text-align: left; }
+    }
+
+    /* --- AJUSTES PARA TABLET GRANDE (A partir de 768px) --- */
+    @media (min-width: 768px) {
+      .csjs-widget { padding: 24px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, .08); border: 1px solid var(--cs-light-gray-border); }
+      .csjs-toolbar { flex-wrap: nowrap; }
+      .csjs-transpose-controls { width: auto; }
+      /* El botón Reset ahora muestra texto */
+      .csjs-btn[data-action="reset"] { width: auto; height: auto; padding: 8px 14px; font-size: .95rem; }
+      .csjs-btn[data-action="reset"] .csjs-btn-text { display: inline-block; }
+      .csjs-btn[data-action="reset"] i { display: none; }
+
+      /* Agrupación de botones de acción a la derecha */
+      .csjs-btn[data-action="like"] { margin-left: auto; }
+
+      /* Los otros 3 botones siguen siendo íconos */
+      .csjs-btn[data-action="like"],
+      .csjs-btn[data-action="pdf"],
+      .csjs-btn[data-action="share"] {
+        order: 3;
+      }
+    }
+
+    /* --- AJUSTES PARA ESCRITORIO (A partir de 992px) --- */
+    @media (min-width: 992px) {
+      .csjs-transpose-label { display: inline-block; }
+      .csjs-toolbar .csjs-btn-text { display: inline-block; }
+      .csjs-btn { width: auto; height: auto; padding: 8px 16px; border-radius: 12px; font-size: .95rem; gap: 8px; }
+      .csjs-btn[data-action="reset"],
+      .csjs-btn[data-action="share"] { background: var(--cs-primary-red); color: var(--cs-white); }
+      .csjs-btn[data-action="like"],
+      .csjs-btn[data-action="pdf"] { background: transparent; border: 1px solid var(--cs-light-gray-border); color: var(--cs-text-secondary); }
+    }
+
+    /* --- Estilos del cuerpo de la canción --- */
+    .csjs-song-body{ line-height:1.65; font-size:1rem; white-space:normal; }
+    .csjs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .chord-sheet .paragraph{ margin:0 0 0.75rem 0; }
+    .chord-sheet h3.label, .chord-sheet .comment{
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background-color: #fd3a13;
+      margin: 18px 0 8px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    .chord-sheet .row{ display:flex; white-space:pre; margin:0; }
+    .chord-sheet .row + .row{ margin-top:.15rem; }
+    .chord-sheet .column{ display:flex; flex-direction:column; }
+    .chord-sheet .chord{ font-weight:700; color:var(--cs-accent); padding-right:8px; }
+    .chord-sheet .lyrics{ min-height:1.2em; }
+    .chord-sheet .chord::after,.chord-sheet .lyrics::after{ content:'\200b';}
+    .csjs-song-body .chord-sheet > h1,.csjs-song-body .chord-sheet > h2{ display:none !important;}
+
+    /* --- FIN: Nuevo Estilo Estético v9 --- */
+
+    /* === MODO OSCURO (Magspot: html.is-dark) ============================== */
+    html.is-dark .csjs-widget{
+      background: var(--widget-bg, #202024);
+      color: var(--title-color, #f8f8fb);
+      border: 1px solid color-mix(in srgb, var(--border-color, #2a2a2f) 80%, #000 20%);
+      box-shadow: 0 4px 20px rgba(0,0,0,.35);
+    }
+    html.is-dark .csjs-header{ /* sin cambios de layout */ }
+    html.is-dark .csjs-artist-img{ box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+    html.is-dark .csjs-song-meta h1{
+      color: var(--title-color, #f8f8fb);
+    }
+    html.is-dark .csjs-song-meta h2{
+      color: #fd3a13; /* mantiene el acento */
+    }
+    html.is-dark .csjs-song-meta p{
+      color: var(--text-color, #c9c9d1);
+    }
+    /* Toolbar */
+    html.is-dark .csjs-toolbar{
+      border-bottom: 1px solid var(--border-color, #2a2a2f);
+    }
+    html.is-dark .csjs-transpose-controls{
+      background: rgba(255,255,255,.06);
+    }
+    html.is-dark .csjs-transpose-btn{
+      color: var(--text-color, #c9c9d1);
+    }
+    html.is-dark .csjs-btn{
+      background: rgba(255,255,255,.06);
+      color: var(--title-color, #f8f8fb);
+      border: 1px solid var(--border-color, #2a2a2f);
+    }
+    html.is-dark .csjs-btn[data-action="share"],
+    html.is-dark .csjs-btn[data-action="reset"]{
+      background: #fd3a13;
+      color: #fff;
+      border-color: transparent;
+    }
+    html.is-dark .csjs-btn[data-action="like"],
+    html.is-dark .csjs-btn[data-action="pdf"]{
+      background: transparent;
+      border: 1px solid var(--border-color, #2a2a2f);
+      color: var(--text-color, #c9c9d1);
+    }
+    /* Foco accesible */
+    html.is-dark .csjs-btn:focus-visible,
+    html.is-dark .csjs-transpose-btn:focus-visible{
+      outline: 2px solid #fd3a13; outline-offset: 2px;
+    }
+    /* Cuerpo de la canción */
+    html.is-dark .csjs-song-body{ color: var(--title-color, #f8f8fb); }
+    html.is-dark .chord-sheet .chord{ color: var(--cs-accent); }          /* acordes */
+    html.is-dark .chord-sheet .lyrics{ color: var(--title-color, #f8f8fb); }
+    /* Etiquetas / comentarios visuales en HTML */
+    html.is-dark .chord-sheet h3.label,
+    html.is-dark .chord-sheet .comment{
+      color: var(--cs-accent);
+      background: transparent;
+      border: 1px solid var(--cs-accent);
+    }
+    /* Scroll horizontal del cuerpo (estético) */
+    html.is-dark .csjs-scroll{
+      scrollbar-color: #444 transparent; /* Firefox */
+    }
+    html.is-dark .csjs-scroll::-webkit-scrollbar{ height: 8px; }
+    html.is-dark .csjs-scroll::-webkit-scrollbar-track{ background: transparent; }
+    html.is-dark .csjs-scroll::-webkit-scrollbar-thumb{
+      background: #444; border-radius: 4px;
+    }
+    /* Breakpoints mantienen estilos; solo ajustamos colores en desktop */
+    @media (min-width: 992px){
+      html.is-dark .csjs-btn[data-action="like"],
+      html.is-dark .csjs-btn[data-action="pdf"]{
+        background: transparent;
+        border: 1px solid var(--border-color, #2a2a2f);
+        color: var(--text-color, #c9c9d1);
+      }
+      html.is-dark .csjs-btn[data-action="share"],
+      html.is-dark .csjs-btn[data-action="reset"]{
+        background: #fd3a13; color: #fff;
+      }
+    }
+  </style>
+
+  <script>
+  (function(){
+    // Observa el DOM y procesa cada <pre.cancion-chordpro> una sola vez
+    const processed = new WeakSet();
+    function bootAll(root=document){
+      root.querySelectorAll('pre.cancion-chordpro').forEach(pre=>{
+        const ready = window.ChordSheetJS && window.jspdf;
+        if(ready && !processed.has(pre)){ processed.add(pre); boot([pre]); }
+      });
+    }
+    const mo = new MutationObserver(()=>bootAll());
+    mo.observe(document.documentElement,{childList:true,subtree:true});
+    bootAll();
+
+    function boot(blocks){
+      const parser    = new ChordSheetJS.ChordProParser();
+      const formatter = new ChordSheetJS.HtmlDivFormatter();
+      const { jsPDF } = window.jspdf;
+
+      // Sanitizador simple para metadatos
+      function esc(t){return (t||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+
+      // Etiquetas a partir de directivas
+      function labelFromDirective(directive = ''){
+        const k = directive.toLowerCase().trim();
+        if (/(chorus|coro|soc|start_of_chorus)/.test(k)) return 'CORO';
+        if (/(verse|verso|sov|start_of_verse)/.test(k)) return 'VERSO';
+        if (/(bridge|puente|sob|start_of_bridge)/.test(k)) return 'PUENTE';
+        if (/(intro|introduccion)/.test(k)) return 'INTRO';
+        if (/(outro|final)/.test(k)) return 'OUTRO';
+        if (/(pre.*chorus|pre.*coro)/.test(k)) return 'PRE-CORO';
+        if (/(interlude|interludio)/.test(k)) return 'INTERLUDIO';
+        return '';
+      }
+
+      // Utilidades imagen
+      function getImgSrcFrom(el){
+        if (!el) return '';
+        const ds = el.getAttribute('data-src') || el.getAttribute('data-lazy-src');
+        if (ds) return ds.trim();
+        const ss = el.getAttribute('srcset');
+        if (ss){ const first = ss.split(',')[0].trim().split(' ')[0]; if (first) return first; }
+        const s = el.getAttribute('src');
+        return s ? s.trim() : '';
+      }
+      function findArtistImg(preEl){
+        const container = preEl.closest('.post-body, .entry-content, article, .post, body') || document;
+        let img = container.querySelector('img.artist-image, img[data-artist]');
+        if (!img && preEl.previousElementSibling && preEl.previousElementSibling.tagName === 'IMG') img = preEl.previousElementSibling;
+        if (!img){ const maybe = preEl.parentElement?.querySelector('img'); if (maybe) img = maybe; }
+        return img || null;
+      }
+
+      blocks.forEach(function(pre, idx){
+        try{
+          const chordproText = (pre.textContent || '').trim();
+          if (!chordproText) return;
+
+          const artistImgEl = findArtistImg(pre);
+          const artistImgSrcFromTag = getImgSrcFrom(artistImgEl);
+
+          // Parseo ChordPro y metadatos
+          const originalSong = parser.parse(chordproText);
+          let transpose = 0;
+
+          const title    = (originalSong?.metadata?.title    || 'Canción sin título');
+          const subtitle = (originalSong?.metadata?.subtitle || '');
+          const album    = (originalSong?.metadata?.album    || originalSong?.metadata?.Album || '');
+          const year     = (originalSong?.metadata?.year     || originalSong?.metadata?.Year  || '');
+          const baseKey  = (originalSong?.metadata?.key      || originalSong?.metadata?.Key   || '');
+
+          const imageFromMeta = (originalSong?.metadata?.image || originalSong?.metadata?.Image || '').trim();
+          const image = artistImgSrcFromTag || imageFromMeta || 'https://i.postimg.cc/sDrFnTG3/Default.webp';
+
+          // Construcción del widget
+          const widget = document.createElement('div');
+          widget.className = 'csjs-widget';
+          widget.id = 'csjs-widget-' + idx;
+
+          const header = document.createElement('div');
+          header.className = 'csjs-header';
+          header.innerHTML = `
+            <img class="csjs-artist-img" src="${image}" alt="Artista" crossorigin="anonymous">
+            <div class="csjs-song-meta">
+              <h1>${esc(title)}</h1>
+              ${subtitle ? `<h2>${esc(subtitle)}</h2>` : ''}
+              ${(album || year) ? `<p>${esc(album)}${album && year ? ' · ' : ''}${esc(year)}</p>` : ''}
+            </div>
+          `;
+
+          const toolbar = document.createElement('div');
+          toolbar.className = 'csjs-toolbar';
+          toolbar.innerHTML = `
+            <div class="csjs-transpose-controls">
+              <span class="csjs-transpose-label">Tono:</span>
+              <button class="csjs-transpose-btn" data-action="transpose" data-value="-1" title="Bajar semitono"><i class="fa-solid fa-minus"></i></button>
+              <span class="csjs-transpose-val" id="csjs-tr-${idx}">0</span>
+              <button class="csjs-transpose-btn" data-action="transpose" data-value="1" title="Subir semitono"><i class="fa-solid fa-plus"></i></button>
+              <button class="csjs-btn" data-action="reset" title="Volver al tono original"><i class="fa-solid fa-arrow-rotate-left"></i><span class="csjs-btn-text">Reset</span></button>
+            </div>
+            <button class="csjs-btn csjs-like" data-action="like" title="Me gusta"><i class="fa-regular fa-heart"></i><span class="csjs-btn-text"> Me gusta</span></button>
+            <button class="csjs-btn" data-action="pdf" title="Descargar PDF"><i class="fa-solid fa-file-pdf"></i><span class="csjs-btn-text"> PDF</span></button>
+            <button class="csjs-btn" data-action="share" title="Compartir"><i class="fa-solid fa-share-nodes"></i><span class="csjs-btn-text"> Compartir</span></button>
+          `;
+
+          const songBody = document.createElement('div');
+          songBody.className = 'csjs-song-body';
+
+          /* contenedor dedicado al scroll */
+          const scrollWrap = document.createElement('div');
+          scrollWrap.className = 'csjs-scroll';
+          scrollWrap.appendChild(songBody);
+
+          widget.appendChild(header);
+          widget.appendChild(toolbar);
+          widget.appendChild(scrollWrap);
+          pre.parentNode.replaceChild(widget, pre);
+
+          // Ocultar imagen fuente si no se quiere conservar
+          if (artistImgEl && artistImgEl.dataset.keep !== '1'){
+            artistImgEl.style.display = 'none';
+          }
+
+          // Accesibilidad básica en botones
+          toolbar.querySelectorAll('button').forEach(b=>{
+            if(!b.getAttribute('aria-label')){
+              const t = b.title || b.dataset.action || 'botón';
+              b.setAttribute('aria-label', t);
+            }
+            b.setAttribute('type','button');
+          });
+
+          // Persistencia "Me gusta"
+          const storageKey = `csjs-like-${title.toLowerCase().replace(/\s+/g,'-')}`;
+          const likeBtn = toolbar.querySelector('.csjs-like');
+          if (likeBtn) {
+            const likeIcon = likeBtn.querySelector('i');
+            try {
+              if (localStorage.getItem(storageKey) === '1') {
+                likeBtn.classList.add('liked');
+                if (likeIcon) {
+                  likeIcon.classList.remove('fa-regular');
+                  likeIcon.classList.add('fa-solid');
+                }
+              }
+            } catch(e){}
+          }
+
+          // Utilidades para transposición
+          const trValEl = () => document.getElementById(`csjs-tr-${idx}`);
+          function updateTransposeVal() {
+            if (!trValEl()) return;
+            if (baseKey && typeof ChordSheetJS !== 'undefined' && ChordSheetJS.Chord) {
+              try {
+                const transposedKey = ChordSheetJS.Chord.parse(baseKey).transpose(transpose).toString();
+                trValEl().textContent = transposedKey;
+              } catch(e) {
+                trValEl().textContent = (transpose > 0 ? '+' : '') + transpose;
+              }
+            } else {
+              trValEl().textContent = (transpose > 0 ? '+' : '') + transpose;
+            }
+          }
+
+          // Render sin metadatos duplicados
+          function renderSong(semitones){
+            const song = parser.parse(chordproText);
+
+            if (song && song.metadata){
+              ['title','subtitle','album','Album','year','Year','artist','Artist'].forEach(k => {
+                if (k in song.metadata) song.metadata[k] = '';
+              });
+            }
+
+            if (semitones !== 0){
+              song.lines.forEach(line=>{
+                line.items?.forEach(item=>{
+                  if (item.chords){
+                    try{
+                      const chord = ChordSheetJS.Chord.parse(item.chords);
+                      item.chords = chord.transpose(semitones).toString();
+                    }catch(e){}
+                  }
+                });
+              });
+            }
+
+            songBody.innerHTML = formatter.format(song);
+
+            const norm = s => (s||'').replace(/\s+/g,' ').trim().toLowerCase();
+            const tText = norm(originalSong?.metadata?.title);
+            const sText = norm(originalSong?.metadata?.subtitle);
+            const h1 = songBody.querySelector('h1');
+            if (h1 && tText && norm(h1.textContent) === tText) h1.remove();
+            const h2 = songBody.querySelector('h2');
+            if (h2 && sText && norm(h2.textContent) === sText) h2.remove();
+          }
+          
+          // --- INICIO PATCH 2: Detección robusta de etiquetas ---
+          function normalizeLabel(s=''){
+            const k = s.toLowerCase();
+            if (/(chorus|coro)/.test(k)) return 'CORO';
+            if (/(verse|verso)/.test(k)) return 'VERSO';
+            if (/(bridge|puente)/.test(k)) return 'PUENTE';
+            if (/(intro|introduccion)/.test(k)) return 'INTRO';
+            if (/(outro|final)/.test(k)) return 'OUTRO';
+            if (/pre.*(chorus|coro)/.test(k)) return 'PRE-CORO';
+            if (/(interlude|interludio)/.test(k)) return 'INTERLUDIO';
+            return '';
+          }
+          function labelFromDirectiveObj(d){
+            if (!d) return '';
+            // v12 puede traer nombre o key
+            return normalizeLabel(d.name || d.key || d.type || '');
+          }
+          function labelFromLine(line){
+            // 1) Directiva de sección explícita
+            const byDir = labelFromDirectiveObj(line.directive || line.section || line.directives);
+            if (byDir) return byDir;
+
+            // 2) Línea de comentario usada como encabezado de sección
+            if (line.type === 'comment' || line.comment) {
+              const c = (line.comment || '').trim();
+              const lab = normalizeLabel(c);
+              if (lab) return lab;
+            }
+
+            // 3) Comentario embebido en items
+            if (Array.isArray(line.items)) {
+              const itemC = line.items.find(i => i?.comment);
+              if (itemC) {
+                const lab = normalizeLabel(itemC.comment);
+                if (lab) return lab;
+              }
+            }
+
+            // 4) Etiqueta implícita al inicio de una línea sin acordes
+            if (Array.isArray(line.items)) {
+              const noChords = !line.items.some(i => i?.chords);
+              if (noChords) {
+                const txt = line.items.map(i => i?.lyrics || '').join('').trim();
+                const lab = normalizeLabel(txt);
+                if (lab) return lab;
+              }
+            }
+            return '';
+          }
+          // --- FIN PATCH 2 ---
+
+
+          // Eventos toolbar
+          toolbar.addEventListener('click', function(ev){
+            const btn = ev.target.closest('.csjs-btn, .csjs-transpose-btn');
+            if (!btn) return;
+            const action = btn.dataset.action;
+
+            switch(action){
+              case 'transpose':
+                transpose += parseInt(btn.dataset.value, 10) || 0;
+                renderSong(transpose);
+                updateTransposeVal();
+                break;
+              case 'reset':
+                transpose = 0;
+                renderSong(transpose);
+                updateTransposeVal();
+                break;
+              case 'like':
+                btn.classList.toggle('liked');
+                const isLiked = btn.classList.contains('liked');
+                const icon = btn.querySelector('i');
+                if (icon) {
+                  icon.classList.toggle('fa-solid', isLiked);
+                  icon.classList.toggle('fa-regular', !isLiked);
+                }
+                try { localStorage.setItem(storageKey, isLiked ? '1' : '0'); } catch(e){}
+                break;
+              case 'pdf':
+                try {
+                  const PDF_THEME = {
+                    page:{ margin:48, line:18 },
+                    title:{ font:'Helvetica', bold:true,  size:16, color:[0,0,0] },
+                    meta: { font:'Helvetica', bold:false, size:10, color:[90,90,90] },
+                    label:{ font:'Helvetica', bold:true,  size:11, color:[253,58,19] }, // #fd3a13
+                    chord:{ font:'Helvetica', bold:true,  size:10, color:[253,58,19] }, // #fd3a13
+                    lyric:{ font:'Helvetica', bold:false, size:10, color:[0,0,0] }
+                  };
+                  function setStyle(pdf,s){
+                    pdf.setFont(s.font, s.bold ? 'bold' : 'normal');
+                    pdf.setFontSize(s.size);
+                    const [r,g,b]=s.color; pdf.setTextColor(r,g,b);
+                  }
+
+                  const pdf = new jsPDF({orientation:'portrait', unit:'pt', format:'letter'});
+                  const pageW = pdf.internal.pageSize.getWidth();
+                  const pageH = pdf.internal.pageSize.getHeight();
+                  const margin = PDF_THEME.page.margin;
+                  const contentW = pageW - margin*2;
+                  let y = margin;
+                  const need = (h=PDF_THEME.page.line)=>{ if(y + h > pageH - margin){ pdf.addPage(); y = margin; } };
+
+                  // --- Encabezado ---
+                  setStyle(pdf, PDF_THEME.title);
+                  const tLines = pdf.splitTextToSize(title, contentW);
+                  pdf.text(tLines, margin, y); y += PDF_THEME.page.line*1.2*tLines.length;
+
+                  if (subtitle){
+                    setStyle(pdf, PDF_THEME.meta);
+                    const sLines = pdf.splitTextToSize(subtitle, contentW);
+                    pdf.text(sLines, margin, y); y += PDF_THEME.page.line*sLines.length;
+                  }
+
+                  let keyTxt = 'Tono no definido';
+                  if (baseKey){
+                    try { keyTxt = 'Tono: ' + ChordSheetJS.Chord.parse(baseKey).transpose(transpose).toString(); }
+                    catch{ keyTxt = `Tono: ${baseKey}`; }
+                  }
+                  setStyle(pdf, PDF_THEME.meta);
+                  pdf.text(keyTxt, margin, y); y += PDF_THEME.page.line*1.2;
+
+                  // === NUEVO: Tomar el DOM ya formateado ===
+                  const cs = songBody.querySelector('.chord-sheet');
+                  if(!cs){ pdf.save((title||'cancion')+'.pdf'); break; }
+
+                  // Medidas del contenedor para escalar a PDF
+                  const csRect = cs.getBoundingClientRect();
+                  const domW = Math.max(1, csRect.width);                // evita /0
+                  const scaleX = contentW / domW;
+
+                  // Recorremos en orden del DOM: labels, comments y filas (.row)
+                  const walker = document.createTreeWalker(cs, NodeFilter.SHOW_ELEMENT, {
+                    acceptNode(el){
+                      if (el.matches('h3.label, .comment, .row')) return NodeFilter.FILTER_ACCEPT;
+                      return NodeFilter.FILTER_SKIP;
+                    }
+                  });
+
+                  let node;
+                  while((node = walker.nextNode())){
+                    // 1) Labels / Comments -> siempre visibles
+                    if (node.matches('h3.label, .comment')){
+                      const txt = (node.textContent || '').trim();
+                      if (txt){
+                        need(PDF_THEME.page.line*1.6);
+                        setStyle(pdf, PDF_THEME.label);
+                        pdf.text(txt.toUpperCase(), margin, y);
+                        y += PDF_THEME.page.line*1.6;
+                      }
+                      continue;
+                    }
+
+                    // 2) Filas (.row)
+                    if (node.classList.contains('row')){
+                      const columns = Array.from(node.querySelectorAll(':scope > .column'));
+                      const parts = columns.map(col => {
+                        const chordEl = col.querySelector(':scope > .chord');
+                        const lyrEl   = col.querySelector(':scope > .lyrics');
+                        return {
+                          chord: (chordEl?.textContent || '').trim(),
+                          lyric: (lyrEl?.textContent   || ''),
+                          // Posición X DOM relativa al contenedor principal
+                          xDom:  col.getBoundingClientRect().left - csRect.left
+                        };
+                      });
+
+                      const hasChords = parts.some(p=>p.chord);
+                      const hasLyrics = parts.some(p=>p.lyric.trim());
+
+                      // 2a) Fila con SOLO acordes -> usar ancho real de cada columna
+                      if (hasChords && !hasLyrics){
+                        need(PDF_THEME.page.line*1.2);
+                        setStyle(pdf, PDF_THEME.chord);
+
+                        const rowRect   = node.getBoundingClientRect();
+                        const domRowW   = Math.max(1, rowRect.width);
+                        const scaleRowX = contentW / domRowW;
+
+                        let lastRight = margin;
+                        const minGap  = Math.max(10, pdf.getTextWidth('    ')); // ~4 espacios
+
+                        parts.forEach((p, i)=>{
+                          if (!p.chord) return;
+                          const colEl   = columns[i];
+                          const colRect = colEl.getBoundingClientRect();
+                          const relLeft = colRect.left - rowRect.left;
+                          const relW    = Math.max(1, colRect.width);
+
+                          const xCenter = margin + (relLeft + relW/2) * scaleRowX;
+                          const wChord  = pdf.getTextWidth(p.chord);
+                          let xPdf = xCenter - wChord/2;
+
+                          if (xPdf < lastRight + minGap) xPdf = lastRight + minGap;
+
+                          pdf.text(p.chord, xPdf, y);
+                          lastRight = xPdf + wChord;
+                        });
+
+                        y += PDF_THEME.page.line*1.2;
+                        continue;
+                      }
+
+                      // 2b) Fila con letra (y opcionalmente acordes)
+                      need(PDF_THEME.page.line * 1.2);
+                      // Construye la línea completa de letra y guarda X de acordes por ancho acumulado
+                      let lyricFull = '';
+                      const chordPos = []; // {text, x}
+
+                      parts.forEach(p => {
+                        // X donde empieza este segmento de letra, medido por ancho acumulado
+                        const xHere = margin + pdf.getTextWidth(lyricFull);
+                        if (p.chord && p.chord.trim()) {
+                          chordPos.push({ text: p.chord.trim(), x: xHere });
+                        }
+                        lyricFull += (p.lyric || '');
+                      });
+                      // 3a) Pintar toda la letra de una sola vez (evita palabras cortadas)
+                      setStyle(pdf, PDF_THEME.lyric);
+                      pdf.text(lyricFull || ' ', margin, y);
+                      
+                      // 3b) Acordes encima, usando X por ancho acumulado + separación mínima
+                      if (chordPos.length){
+                        setStyle(pdf, PDF_THEME.chord);
+                        const chordY = y - Math.round(PDF_THEME.page.line*0.65);
+                        let lastRight = margin;
+                        const minGap = Math.max(8, pdf.getTextWidth('   ')); // ~3 espacios
+
+                        chordPos.forEach(c=>{
+                          const w = pdf.getTextWidth(c.text);
+                          // X base por ancho de letra previa + pequeño centrado óptico
+                          let x = c.x + w*0.15;
+                          // Forzar que no se sobreponga al acorde anterior
+                          if (x < lastRight + minGap) x = lastRight + minGap;
+                          pdf.text(c.text, x, chordY);
+                          lastRight = x + w;
+                        });
+                      }
+
+                      y += PDF_THEME.page.line * 1.2;
+                    }
+                  }
+
+                  pdf.save((title || 'cancion').replace(/\s+/g,'_') + '.pdf');
+                } catch (err) {
+                  console.error(err);
+                  alert('Error al generar el PDF');
+                }
+                break;
+              case 'share':
+                if (navigator.share){
+                  navigator.share({ title:title, text:`Mira los acordes de "${title}"`, url:window.location.href }).catch(()=>{});
+                } else {
+                  const url = window.location.href;
+                  if (navigator.clipboard?.writeText){
+                    navigator.clipboard.writeText(url).then(()=>alert('Enlace copiado al portapapeles.'));
+                  } else {
+                    prompt('Copia el enlace:', url);
+                  }
+                }
+                break;
+            }
+          });
+
+          // Primer render
+          renderSong(transpose);
+          updateTransposeVal();
+
+        }catch(err){ console.error('ChordSheetJS: error procesando la canción', err); }
+      });
+    }
+  })();
+  </script>
+</b:if>
+
