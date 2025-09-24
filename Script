@@ -280,11 +280,27 @@
   (function(){
     // Observa el DOM y procesa cada <pre.cancion-chordpro> una sola vez
     const processed = new WeakSet();
+    let widgetSeq = 0;
+
+    function libsReady(){
+      return !!(window.ChordSheetJS?.ChordProParser && window.jspdf?.jsPDF);
+    }
+
     function bootAll(root=document){
+      const pending = [];
       root.querySelectorAll('pre.cancion-chordpro').forEach(pre=>{
-        const ready = window.ChordSheetJS && window.jspdf;
-        if(ready && !processed.has(pre)){ processed.add(pre); boot([pre]); }
+        if(!processed.has(pre)) pending.push(pre);
       });
+
+      if(!pending.length) return;
+
+      if(!libsReady()){
+        setTimeout(()=>bootAll(root), 120);
+        return;
+      }
+
+      pending.forEach(pre=>processed.add(pre));
+      boot(pending);
     }
     const mo = new MutationObserver(()=>bootAll());
     mo.observe(document.documentElement,{childList:true,subtree:true});
@@ -329,10 +345,12 @@
         return img || null;
       }
 
-      blocks.forEach(function(pre, idx){
+      blocks.forEach(function(pre){
         try{
           const chordproText = (pre.textContent || '').trim();
           if (!chordproText) return;
+
+          const idx = widgetSeq++;
 
           const artistImgEl = findArtistImg(pre);
           const artistImgSrcFromTag = getImgSrcFrom(artistImgEl);
