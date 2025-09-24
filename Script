@@ -55,8 +55,8 @@
     /* --- AJUSTES PARA TABLET GRANDE (A partir de 768px) --- */
     @media (min-width: 768px) {
       .csjs-widget { padding: 24px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0, 0, 0, .08); border: 1px solid var(--cs-light-gray-border); }
-      .csjs-toolbar { flex-wrap: nowrap; }
-      .csjs-transpose-controls { width: auto; }
+      .csjs-toolbar { flex-wrap: nowrap; justify-content: flex-start; align-items: center; gap: 12px; }
+      .csjs-transpose-controls { width: auto; flex: 1 1 clamp(220px, 40%, 520px); margin: 0; }
       /* El botón Reset ahora muestra texto */
       .csjs-btn[data-action="reset"] { width: auto; height: auto; padding: 8px 14px; font-size: .95rem; }
       .csjs-btn[data-action="reset"] .csjs-btn-text { display: inline-block; }
@@ -207,7 +207,7 @@
       flex: 1 1 auto;
       min-width: 220px;
       max-width: 520px;
-      margin: 0 auto;                  /* centrada cuando sobra espacio */
+      margin: 0;
     }
 
     /* Los otros botones nunca se estiran ni se parten */
@@ -228,10 +228,13 @@
        - Ocultar textos de Like/PDF/Share para que NO partan palabras */
     @media (min-width:768px) and (max-width:990.98px){
       .csjs-toolbar{ flex-wrap: nowrap; align-items:center; gap: 12px; }
-      .csjs-transpose-controls{ flex: 1 1 clamp(220px,40%,520px); }
+      .csjs-transpose-controls{ flex: 1 1 clamp(220px,40%,520px); margin: 0; }
+      .csjs-btn[data-action="reset"]{ color: #fd3a13; background: var(--cs-light-gray-bg); border: 1px solid var(--cs-light-gray-border); }
+      html.is-dark .csjs-btn[data-action="reset"]{ background: transparent; border-color: #fd3a13; }
       .csjs-btn[data-action="reset"] .csjs-btn-text{
         font-weight: 700; color: #fd3a13;
       }
+      html.is-dark .csjs-btn[data-action="reset"] .csjs-btn-text{ color: #fd3a13; }
       /* Mantén íconos sin texto para evitar cortes en este rango */
       .csjs-btn[data-action="like"] .csjs-btn-text,
       .csjs-btn[data-action="pdf"]  .csjs-btn-text,
@@ -245,10 +248,13 @@
     */
     @media (min-width:991px) and (max-width:1105.98px){
       .csjs-toolbar{ flex-wrap: nowrap; align-items:center; gap: 14px; }
-      .csjs-transpose-controls{ flex: 1 1 clamp(240px,42%,520px); }
+      .csjs-transpose-controls{ flex: 1 1 clamp(240px,42%,520px); margin: 0; }
+      .csjs-btn[data-action="reset"]{ color: #fd3a13; background: var(--cs-light-gray-bg); border: 1px solid var(--cs-light-gray-border); }
+      html.is-dark .csjs-btn[data-action="reset"]{ background: transparent; border-color: #fd3a13; }
       .csjs-btn[data-action="reset"] .csjs-btn-text{
         font-weight:700; color:#fd3a13;
       }
+      html.is-dark .csjs-btn[data-action="reset"] .csjs-btn-text{ color:#fd3a13; }
       .csjs-btn[data-action="like"] .csjs-btn-text,
       .csjs-btn[data-action="pdf"]  .csjs-btn-text,
       .csjs-btn[data-action="share"] .csjs-btn-text{ display: none; }
@@ -260,7 +266,7 @@
     */
     @media (min-width:1106px){
       .csjs-toolbar{ flex-wrap: nowrap; align-items:center; gap: 16px; }
-      .csjs-transpose-controls{ flex: 1 1 clamp(260px,45%,520px); }
+      .csjs-transpose-controls{ flex: 1 1 clamp(260px,45%,520px); margin: 0; }
       .csjs-toolbar .csjs-btn-text{ display: inline-block; }
     }
 
